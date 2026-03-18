@@ -1,5 +1,5 @@
 import { hydrate, type ResolvedRegister, type State } from '@wagmi/core'
-import { mergeProps, onMount, type ParentProps } from 'solid-js'
+import { merge, onSettled, type ParentProps } from 'solid-js'
 
 export type HydrateProps = {
   config: ResolvedRegister['config']
@@ -8,7 +8,7 @@ export type HydrateProps = {
 }
 
 export function Hydrate(parameters: ParentProps<HydrateProps>) {
-  const props = mergeProps({ reconnectOnMount: true }, parameters)
+  const props = merge({ reconnectOnMount: true }, parameters)
 
   const { onMount: hydrateOnMount } = hydrate(props.config, {
     initialState: props.initialState,
@@ -18,7 +18,7 @@ export function Hydrate(parameters: ParentProps<HydrateProps>) {
   // Hydrate for non-SSR
   if (!props.config._internal.ssr) hydrateOnMount()
 
-  onMount(() => {
+  onSettled(() => {
     if (!props.config._internal.ssr) return
     hydrateOnMount()
   })

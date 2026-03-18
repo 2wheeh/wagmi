@@ -10,7 +10,7 @@ import type {
   UnionCompute,
   UnionExactPartial,
 } from '@wagmi/core/internal'
-import { type Accessor, createEffect, onCleanup } from 'solid-js'
+import { type Accessor, createEffect } from 'solid-js'
 import { useChainId } from './useChainId.js'
 import { useConfig } from './useConfig.js'
 
@@ -25,23 +25,30 @@ export function useWatchBlockNumber<
 ): useWatchBlockNumber.ReturnType {
   const config = useConfig(parameters)
   const configChainId = useChainId(() => ({ config: config() }))
-  createEffect(() => {
-    const {
-      config: _,
-      chainId = configChainId(),
-      enabled = true,
-      onBlockNumber,
-      ...rest
-    } = parameters()
-    if (!enabled) return
-    if (!onBlockNumber) return
-    const unwatch = watchBlockNumber(config(), {
-      ...(rest as any),
-      chainId,
-      onBlockNumber,
-    })
-    onCleanup(() => unwatch())
-  })
+  createEffect(
+    () => ({
+      params: parameters(),
+      config: config(),
+      configChainId: configChainId(),
+    }),
+    ({ params, config: _config, configChainId: _configChainId }) => {
+      const {
+        config: _,
+        chainId = _configChainId,
+        enabled = true,
+        onBlockNumber,
+        ...rest
+      } = params
+      if (!enabled) return
+      if (!onBlockNumber) return
+      const unwatch = watchBlockNumber(_config, {
+        ...(rest as any),
+        chainId,
+        onBlockNumber,
+      })
+      return () => unwatch()
+    },
+  )
 }
 
 export namespace useWatchBlockNumber {

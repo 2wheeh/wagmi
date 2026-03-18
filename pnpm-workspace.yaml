@@ -28,7 +28,7 @@ catalog:
   '@safe-global/safe-apps-sdk': 9.1.0
   '@tanstack/query-core': 5.90.20
   '@tanstack/react-query': 5.90.21
-  '@tanstack/solid-query': 5.90.23
+  '@tanstack/solid-query': https://pkg.pr.new/@tanstack/solid-query@e7415f0
   '@tanstack/vue-query': 5.92.9
   '@types/react': ^19.2.0
   '@types/react-dom': ^19.2.0
@@ -41,9 +41,9 @@ catalog:
   porto: 0.2.35
   react: 19.2.0
   react-dom: 19.2.0
-  solid-js: 1.9.10
+  solid-js: 2.0.0-beta.2
   vite: 7.2.2
-  vite-plugin-solid: 2.11.10
+  vite-plugin-solid: 3.0.0-next.2
   vue: 3.5.25
 
 linkWorkspacePackages: deep

@@ -5,7 +5,7 @@ import {
   type ResolvedRegister,
   watchConnectors,
 } from '@wagmi/core'
-import { type Accessor, createEffect, createSignal, onCleanup } from 'solid-js'
+import { type Accessor, createEffect, createSignal } from 'solid-js'
 import { useConfig } from './useConfig.js'
 
 /** https://wagmi.sh/solid/api/primitives/useConnectors */
@@ -15,18 +15,20 @@ export function useConnectors<
   parameters: useConnectors.Parameters<config> = () => ({}),
 ): useConnectors.ReturnType<config> {
   const config = useConfig(parameters)
-  const [connectors, setConnectors] = createSignal(getConnectors(config()))
-  createEffect(() => {
-    const _config = config()
-    setConnectors(() => getConnectors(_config))
-
-    const unsubscribe = watchConnectors(_config, {
-      onChange(data) {
-        setConnectors(() => data)
-      },
-    })
-    onCleanup(() => unsubscribe())
-  })
+  const [connectors, setConnectors] = createSignal(() =>
+    getConnectors(config()),
+  )
+  createEffect(
+    () => config(),
+    (_config) => {
+      const unsubscribe = watchConnectors(_config, {
+        onChange(data) {
+          setConnectors(() => data)
+        },
+      })
+      return () => unsubscribe()
+    },
+  )
   return connectors
 }
 

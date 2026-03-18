@@ -11,7 +11,7 @@ import {
   getConnectorClientQueryOptions,
 } from '@wagmi/core/query'
 import type { Accessor } from 'solid-js'
-import { createEffect, createMemo, on } from 'solid-js'
+import { createEffect, createMemo } from 'solid-js'
 import { type UseQueryReturnType, useQuery } from '../utils/query.js'
 import { useChainId } from './useChainId.js'
 import { useConfig } from './useConfig.js'
@@ -41,22 +41,22 @@ export function useConnectorClient<
     }),
   )
   const queryClient = useQueryClient()
+  // `on` helper is removed in Solid 2.0 — use split effect instead
   createEffect(
-    on(
-      () => connection().address,
-      (currentAddress, previousAddress) => {
-        if (!currentAddress && previousAddress) {
-          // remove when account is disconnected
-          queryClient.removeQueries({ queryKey: options().queryKey })
-        } else if (currentAddress !== previousAddress) {
-          // invalidate when address changes
-          queryClient.invalidateQueries({ queryKey: options().queryKey })
-        }
-      },
-      { defer: true },
-    ),
+    () => connection().address,
+    (currentAddress, previousAddress) => {
+      // Skip initial run (equivalent to defer: true)
+      if (previousAddress === undefined) return
+      if (!currentAddress && previousAddress) {
+        // remove when account is disconnected
+        queryClient.removeQueries({ queryKey: options().queryKey })
+      } else if (currentAddress !== previousAddress) {
+        // invalidate when address changes
+        queryClient.invalidateQueries({ queryKey: options().queryKey })
+      }
+    },
   )
-  return useQuery(options) as any
+  return useQuery(options as any) as any
 }
 
 export namespace useConnectorClient {

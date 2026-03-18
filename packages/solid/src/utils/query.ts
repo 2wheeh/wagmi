@@ -19,7 +19,7 @@ import type {
   UnionStrictOmit,
 } from '@wagmi/core/internal'
 import { hashFn } from '@wagmi/core/query'
-import { type Accessor, mergeProps } from 'solid-js'
+import { type Accessor, merge } from 'solid-js'
 
 export type SolidMutationParameters<
   data = unknown,
@@ -90,7 +90,7 @@ export function useQuery<queryFnData, error, data, queryKey extends QueryKey>(
     ...(parameters() as any),
     queryKeyHashFn: hashFn, // for bigint support
   }))
-  return mergeProps(result, {
+  return merge(result, {
     get queryKey() {
       return parameters().queryKey
     },
@@ -153,7 +153,7 @@ export function useInfiniteQuery<
     ...(parameters() as any),
     queryKeyHashFn: hashFn, // for bigint support
   }))
-  return mergeProps(
+  return merge(
     result,
     parameters().queryKey,
   ) as unknown as UseInfiniteQueryReturnType<data, error>

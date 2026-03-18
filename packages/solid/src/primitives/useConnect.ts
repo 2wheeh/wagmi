@@ -8,7 +8,7 @@ import {
   type ConnectVariables,
   connectMutationOptions,
 } from '@wagmi/core/query'
-import { type Accessor, createEffect, onCleanup } from 'solid-js'
+import { type Accessor, createEffect } from 'solid-js'
 import type { UseMutationReturnType } from '../utils/query.js'
 import { useMutation } from '../utils/query.js'
 import { useConfig } from './useConfig.js'
@@ -22,17 +22,20 @@ export function useConnect<config extends Config = Config, context = unknown>(
     connectMutationOptions(config(), parameters()),
   )
   // Reset mutation back to an idle state when the connector disconnects.
-  createEffect(() => {
-    const unsubscribe = config().subscribe(
-      ({ status }) => status,
-      (status, previousStatus) => {
-        if (previousStatus === 'connected' && status === 'disconnected') {
-          mutation.reset()
-        }
-      },
-    )
-    onCleanup(() => unsubscribe())
-  })
+  createEffect(
+    () => config(),
+    (_config) => {
+      const unsubscribe = _config.subscribe(
+        ({ status }) => status,
+        (status, previousStatus) => {
+          if (previousStatus === 'connected' && status === 'disconnected') {
+            mutation.reset()
+          }
+        },
+      )
+      return () => unsubscribe()
+    },
+  )
   return mutation as unknown as useConnect.ReturnType<config, context>
 }
 

@@ -6,7 +6,7 @@ import {
 } from '@wagmi/core'
 import type { ConfigParameter } from '@wagmi/core/internal'
 import { watchChains } from '@wagmi/core/internal'
-import { type Accessor, createEffect, createSignal, onCleanup } from 'solid-js'
+import { type Accessor, createEffect, createSignal } from 'solid-js'
 import { useConfig } from './useConfig.js'
 
 /** https://wagmi.sh/solid/api/primitives/useChains */
@@ -14,17 +14,18 @@ export function useChains<config extends Config = ResolvedRegister['config']>(
   parameters: useChains.Parameters<config> = () => ({}),
 ): useChains.ReturnType<config> {
   const config = useConfig(parameters)
-  const [chains, setChains] = createSignal<GetChainsReturnType<config>>(
-    getChains(config()),
+  const [chains, setChains] = createSignal(() => getChains(config()))
+  createEffect(
+    () => config(),
+    (_config) => {
+      const unsubscribe = watchChains(_config, {
+        onChange(data) {
+          setChains(() => data)
+        },
+      })
+      return () => unsubscribe()
+    },
   )
-  createEffect(() => {
-    const unsubscribe = watchChains(config(), {
-      onChange(data) {
-        setChains(() => data)
-      },
-    })
-    onCleanup(() => unsubscribe())
-  })
   return chains
 }
 

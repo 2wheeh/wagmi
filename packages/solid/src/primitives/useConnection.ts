@@ -6,7 +6,7 @@ import {
   watchConnection,
 } from '@wagmi/core'
 import type { ConfigParameter } from '@wagmi/core/internal'
-import { type Accessor, createEffect, createSignal, onCleanup } from 'solid-js'
+import { type Accessor, createEffect, createSignal } from 'solid-js'
 import { useConfig } from './useConfig.js'
 
 /** https://wagmi.sh/solid/api/primitives/useConnection */
@@ -16,17 +16,20 @@ export function useConnection<
   parameters: useConnection.Parameters<config> = () => ({}),
 ): useConnection.ReturnType<config> {
   const config = useConfig(parameters)
-  const [connection, setConnection] = createSignal(getConnection(config()))
-  createEffect(() => {
-    const _config = config()
-    setConnection(() => getConnection(_config))
-    const unsubscribe = watchConnection(_config, {
-      onChange(data) {
-        setConnection(() => data)
-      },
-    })
-    onCleanup(() => unsubscribe())
-  })
+  const [connection, setConnection] = createSignal(() =>
+    getConnection(config()),
+  )
+  createEffect(
+    () => config(),
+    (_config) => {
+      const unsubscribe = watchConnection(_config, {
+        onChange(data) {
+          setConnection(() => data)
+        },
+      })
+      return () => unsubscribe()
+    },
+  )
   return connection
 }
 

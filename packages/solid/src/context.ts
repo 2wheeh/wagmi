@@ -2,7 +2,7 @@ import type { ResolvedRegister, State } from '@wagmi/core'
 import {
   createComponent,
   createContext,
-  mergeProps,
+  merge,
   type ParentProps,
 } from 'solid-js'
 import { Hydrate } from './hydrate.js'
@@ -18,7 +18,7 @@ export type WagmiProviderProps = {
 }
 
 export function WagmiProvider(parameters: ParentProps<WagmiProviderProps>) {
-  const props = mergeProps({ reconnectOnMount: true }, parameters)
+  const props = merge({ reconnectOnMount: true }, parameters)
   return createComponent(Hydrate, {
     get config() {
       return props.config
@@ -30,7 +30,7 @@ export function WagmiProvider(parameters: ParentProps<WagmiProviderProps>) {
       return props.reconnectOnMount
     },
     get children() {
-      return createComponent(WagmiContext.Provider, {
+      return createComponent(WagmiContext, {
         get value() {
           return props.config
         },
